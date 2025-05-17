@@ -3,10 +3,11 @@ name: Deploy Flask App to Azure
 on:
   push:
     branches:
-      - main  # Trigger only when pushing to main branch
+      - main
+      - dev
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +24,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Deploy to Azure Web App
+    - name: Deploy to Azure (Staging or Production)
       uses: azure/webapps-deploy@v2
       with:
-        app-name: flask-cicd-webapp  # Your Azure Web App name
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        app-name: ${{ github.ref == 'refs/heads/main' && 'flask-cicd-webapp' || 'flask-cicd-webapp-staging' }}
+        publish-profile: ${{ github.ref == 'refs/heads/main' && secrets.AZURE_WEBAPP_PUBLISH_PROFILE || secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
         package: .
